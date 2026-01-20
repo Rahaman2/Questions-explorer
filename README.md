@@ -1,4 +1,4 @@
-# Keyword Research Tool
+# Questions Explorer
 
 A powerful keyword research tool powered by Google Auto Suggestions API. Get hundreds of keyword suggestions with beautiful visualizations similar to AnswerThePublic.
 
@@ -38,7 +38,7 @@ A powerful keyword research tool powered by Google Auto Suggestions API. Get hun
 
 1. Clone or download this repository:
 ```bash
-cd keyword-research-tool
+cd Questions-explorer
 ```
 
 2. Install dependencies:
@@ -68,8 +68,10 @@ python app.py
 ```
 
 The application will be available at:
-- Local: http://127.0.0.1:5000
-- Network: http://[your-ip]:5000
+- Local: http://127.0.0.1:5001
+- Network: http://[your-ip]:5001
+
+> **Note:** The application runs on port 5001 by default. If you need to change the port, edit [app.py](app.py) line 7.
 
 ### Using the Tool
 
@@ -95,7 +97,7 @@ Good keywords to try:
 ## Project Structure
 
 ```
-keyword-research-tool/
+Questions-explorer/
 ├── app.py                          # Main Flask application entry point
 ├── config.py                       # Configuration management
 ├── requirements.txt                # Python dependencies
@@ -170,10 +172,19 @@ class Config:
 - Google may rate-limit requests from your IP
 
 ### Port Already in Use
-If port 5000 is already in use, modify [app.py](app.py):
+The application uses port 5001 by default. If this port is already in use, modify [app.py](app.py) line 7:
 ```python
 app.run(host='0.0.0.0', port=8080, debug=app.config['DEBUG'])
 ```
+
+### Template Not Found Error
+If you encounter a `jinja2.exceptions.TemplateNotFound` error:
+1. Make sure you're running the application from the project root directory
+2. Stop any old Flask processes: Press `Ctrl+C` in the terminal
+3. Clear Python cache: Delete all `__pycache__` folders
+4. Restart the application with `python app.py`
+
+The [app/__init__.py](app/__init__.py) file uses absolute paths to ensure templates are always found correctly.
 
 ## Future Enhancements (Phase 2)
 
