@@ -1,6 +1,7 @@
 // Store current suggestions and keyword
 let currentSuggestions = [];
 let currentKeyword = '';
+let currentCategorizedData = null;
 
 // DOM elements
 const keywordForm = document.getElementById('keyword-form');
@@ -61,7 +62,8 @@ keywordForm.addEventListener('submit', async (e) => {
         }
 
         currentSuggestions = data.suggestions;
-        displayAllViews(currentSuggestions, currentKeyword);
+        currentCategorizedData = data.categorized || null;
+        displayAllViews(currentSuggestions, currentKeyword, currentCategorizedData);
     } catch (error) {
         showError(error.message);
     } finally {
@@ -164,10 +166,16 @@ function switchView(viewName) {
 }
 
 // Display all views
-function displayAllViews(suggestions, keyword) {
+function displayAllViews(suggestions, keyword, categorizedData = null) {
     displayTableView(suggestions);
     displayVisualizationView(suggestions, keyword);
-    displayQuestionsView(suggestions);
+
+    // Use enhanced questions view if categorized data is available
+    if (categorizedData && categorizedData.categories && categorizedData.metrics) {
+        displayEnhancedQuestionsView(categorizedData);
+    } else {
+        displayQuestionsView(suggestions);
+    }
 
     resultCount.textContent = suggestions.length;
     showResults();
@@ -259,6 +267,179 @@ function displayQuestionsView(suggestions) {
             listElement.classList.add('empty');
         }
     });
+}
+
+// Display enhanced questions view with metrics dashboard and accordion
+function displayEnhancedQuestionsView(categorizedData) {
+    const metricsDashboard = document.getElementById('metrics-dashboard');
+    const categoryAccordions = document.getElementById('category-accordions');
+
+    if (!metricsDashboard || !categoryAccordions) {
+        console.warn('Enhanced questions view containers not found');
+        return;
+    }
+
+    // Clear existing content
+    metricsDashboard.innerHTML = '';
+    categoryAccordions.innerHTML = '';
+
+    const { categories, metrics } = categorizedData;
+
+    // Create metrics dashboard
+    createMetricsDashboard(metrics, metricsDashboard);
+
+    // Category metadata for icons and colors
+    const categoryMetadata = {
+        "Questions": { icon: "❓", color: "#667eea" },
+        "Prepositions": { icon: "🔗", color: "#764ba2" },
+        "Comparisons": { icon: "⚖️", color: "#f093fb" },
+        "Intent_Based": { icon: "🎯", color: "#4facfe" },
+        "Time_Related": { icon: "⏰", color: "#43e97b" },
+        "Audience_Specific": { icon: "👥", color: "#fa709a" },
+        "Problem_Solving": { icon: "🔧", color: "#30cfd0" },
+        "Feature_Specific": { icon: "⚙️", color: "#a8edea" },
+        "Opinions_Reviews": { icon: "⭐", color: "#ffd89b" },
+        "Cost_Related": { icon: "💰", color: "#19547b" },
+        "Trend_Based": { icon: "📈", color: "#f5af19" }
+    };
+
+    // Create accordion sections for each category
+    Object.keys(categories).forEach(categoryName => {
+        const suggestions = categories[categoryName];
+        const categoryMetric = metrics[categoryName] || { count: 0, percentage: 0 };
+        const metadata = categoryMetadata[categoryName] || { icon: "📋", color: "#667eea" };
+
+        const accordionSection = createAccordionSection(
+            categoryName,
+            suggestions,
+            categoryMetric,
+            metadata,
+            metrics.total
+        );
+
+        categoryAccordions.appendChild(accordionSection);
+    });
+}
+
+// Create metrics dashboard
+function createMetricsDashboard(metrics, container) {
+    const categoryMetadata = {
+        "Questions": { icon: "❓", color: "#667eea" },
+        "Prepositions": { icon: "🔗", color: "#764ba2" },
+        "Comparisons": { icon: "⚖️", color: "#f093fb" },
+        "Intent_Based": { icon: "🎯", color: "#4facfe" },
+        "Time_Related": { icon: "⏰", color: "#43e97b" },
+        "Audience_Specific": { icon: "👥", color: "#fa709a" },
+        "Problem_Solving": { icon: "🔧", color: "#30cfd0" },
+        "Feature_Specific": { icon: "⚙️", color: "#a8edea" },
+        "Opinions_Reviews": { icon: "⭐", color: "#ffd89b" },
+        "Cost_Related": { icon: "💰", color: "#19547b" },
+        "Trend_Based": { icon: "📈", color: "#f5af19" }
+    };
+
+    // Create metric cards for each category
+    Object.keys(metrics).forEach(categoryName => {
+        if (categoryName === 'total') return;
+
+        const metric = metrics[categoryName];
+        const metadata = categoryMetadata[categoryName] || { icon: "📋", color: "#667eea" };
+
+        const metricCard = document.createElement('div');
+        metricCard.className = 'metric-card';
+        metricCard.style.borderLeftColor = metadata.color;
+
+        metricCard.innerHTML = `
+            <div class="metric-card-header">
+                <span class="metric-icon">${metadata.icon}</span>
+                <span class="metric-name">${formatCategoryName(categoryName)}</span>
+            </div>
+            <div class="metric-stats">
+                <span class="metric-count">${metric.count}</span>
+                <span class="metric-percentage">${metric.percentage}%</span>
+            </div>
+            <div class="metric-bar">
+                <div class="metric-bar-fill" style="width: ${metric.percentage}%; background: ${metadata.color};"></div>
+            </div>
+        `;
+
+        container.appendChild(metricCard);
+    });
+}
+
+// Create single accordion section
+function createAccordionSection(categoryName, suggestions, metric, metadata, totalCount) {
+    const section = document.createElement('div');
+    section.className = 'accordion-section';
+    section.dataset.category = categoryName;
+
+    const header = document.createElement('div');
+    header.className = 'accordion-header';
+
+    const percentage = totalCount > 0 ? ((suggestions.length / totalCount) * 100).toFixed(1) : 0;
+
+    header.innerHTML = `
+        <div class="accordion-header-left">
+            <span class="accordion-icon">${metadata.icon}</span>
+            <span class="accordion-title">${formatCategoryName(categoryName)}</span>
+        </div>
+        <div class="accordion-header-right">
+            <div class="accordion-mini-bar">
+                <div class="accordion-mini-bar-fill" style="width: ${percentage}%;"></div>
+            </div>
+            <span class="accordion-count">${metric.count}</span>
+            <span class="accordion-expand-icon">▼</span>
+        </div>
+    `;
+
+    const content = document.createElement('div');
+    content.className = 'accordion-content';
+
+    const contentInner = document.createElement('div');
+    contentInner.className = 'accordion-content-inner';
+
+    if (suggestions.length > 0) {
+        const list = document.createElement('ul');
+        list.className = 'category-suggestions-list';
+
+        suggestions.forEach(suggestion => {
+            const li = document.createElement('li');
+            li.className = 'category-suggestion-item';
+            li.textContent = suggestion;
+            list.appendChild(li);
+        });
+
+        contentInner.appendChild(list);
+    } else {
+        contentInner.innerHTML = `
+            <div class="empty-category">
+                <div class="empty-category-icon">${metadata.icon}</div>
+                <p>No suggestions found for this category</p>
+            </div>
+        `;
+    }
+
+    content.appendChild(contentInner);
+
+    // Add click event to toggle accordion
+    header.addEventListener('click', () => {
+        const isExpanded = section.classList.contains('expanded');
+
+        if (isExpanded) {
+            section.classList.remove('expanded');
+        } else {
+            section.classList.add('expanded');
+        }
+    });
+
+    section.appendChild(header);
+    section.appendChild(content);
+
+    return section;
+}
+
+// Format category name for display
+function formatCategoryName(categoryName) {
+    return categoryName.replace(/_/g, ' ');
 }
 
 // Utility functions

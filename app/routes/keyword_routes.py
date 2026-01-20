@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, make_response
 from app.services.keyword_service import get_suggestions
+from app.services.category_service import CategoryService
 from app.utils.csv_exporter import generate_csv
 
 keyword_bp = Blueprint('keyword', __name__)
@@ -14,10 +15,10 @@ def index():
 @keyword_bp.route('/api/keywords', methods=['POST'])
 def search_keywords():
     """
-    Process keyword search request and return suggestions.
+    Process keyword search request and return suggestions with categorization.
 
     Returns:
-        JSON response with suggestions or error message
+        JSON response with suggestions, categorized data, and metrics
     """
     data = request.get_json()
 
@@ -29,6 +30,14 @@ def search_keywords():
 
     if 'error' in result:
         return jsonify(result), 400
+
+    # Categorize the suggestions
+    suggestions = result.get('suggestions', [])
+    category_service = CategoryService()
+    categorized_data = category_service.categorize_suggestions(suggestions)
+
+    # Add categorized data to response while keeping original suggestions for backward compatibility
+    result['categorized'] = categorized_data
 
     return jsonify(result), 200
 
