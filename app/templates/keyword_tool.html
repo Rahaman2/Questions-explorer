@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyword Research Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Keyword Research Tool</h1>
+            <p class="subtitle">Get keyword suggestions powered by Google Auto Suggestions</p>
+        </header>
+
+        <main>
+            <div class="search-section">
+                <form id="keyword-form">
+                    <div class="input-group">
+                        <input
+                            type="text"
+                            id="keyword-input"
+                            name="keyword"
+                            placeholder="Enter a keyword (e.g., how to learn)"
+                            autocomplete="off"
+                        >
+                        <button type="submit" id="search-btn">Search</button>
+                    </div>
+                </form>
+
+                <div id="error-message" class="error-message" style="display: none;"></div>
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Fetching suggestions...</p>
+                </div>
+            </div>
+
+            <div id="results-section" class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2>Results (<span id="result-count">0</span> suggestions)</h2>
+                    <div class="action-buttons">
+                        <button id="copy-btn" class="btn-secondary">Copy to Clipboard</button>
+                        <button id="export-btn" class="btn-primary">Export CSV</button>
+                    </div>
+                </div>
+
+                <!-- View Tabs -->
+                <div class="view-tabs">
+                    <button class="tab-btn active" data-view="visualization">Visualization</button>
+                    <button class="tab-btn" data-view="questions">Questions</button>
+                    <button class="tab-btn" data-view="table">Table View</button>
+                </div>
+
+                <!-- Visualization View -->
+                <div id="visualization-view" class="view-content active">
+                    <div class="tree-container">
+                        <div class="tree-center">
+                            <div class="center-keyword" id="center-keyword"></div>
+                        </div>
+                        <div class="tree-branches" id="tree-branches">
+                            <!-- Tree branches will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Questions View -->
+                <div id="questions-view" class="view-content">
+                    <div class="questions-grid">
+                        <div class="question-category" id="what-questions">
+                            <h3>What</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                        <div class="question-category" id="how-questions">
+                            <h3>How</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                        <div class="question-category" id="why-questions">
+                            <h3>Why</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                        <div class="question-category" id="where-questions">
+                            <h3>Where</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                        <div class="question-category" id="when-questions">
+                            <h3>When</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                        <div class="question-category" id="who-questions">
+                            <h3>Who</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                        <div class="question-category" id="which-questions">
+                            <h3>Which</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                        <div class="question-category" id="are-questions">
+                            <h3>Are</h3>
+                            <ul class="question-list"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table View -->
+                <div id="table-view" class="view-content">
+                    <div class="table-wrapper">
+                        <table id="results-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Keyword Suggestion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-body">
+                                <!-- Results will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by Google Auto Suggestions API</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
