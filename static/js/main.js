@@ -40,7 +40,7 @@ keywordForm.addEventListener('submit', async (e) => {
 
     currentKeyword = keyword;
 
-    // Reset UI
+    // Reset UI 
     hideError();
     hideResults();
     showLoading();
